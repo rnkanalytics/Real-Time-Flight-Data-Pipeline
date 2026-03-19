@@ -40,7 +40,7 @@ services:
     volumes:
       - ./spark:/opt/spark-apps
       - ~/.config/gcloud/application_default_credentials.json:/opt/spark-apps/gcp-key.json
-    command: bash -c "mkdir -p /root/.ivy2/cache && chmod -R 777 /root/.ivy2 && /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.36.1 --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem --conf spark.hadoop.fs.AbstractFileSystem.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopAbstractFileSystem --conf spark.hadoop.google.cloud.auth.service.account.enable=true /opt/spark-apps/spark_stream.py"
+    command: bash -c "mkdir -p /root/.ivy2/cache && chmod -R 777 /root/.ivy2 && /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.36.1,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.11 --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem --conf spark.hadoop.fs.AbstractFileSystem.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopAbstractFileSystem --conf spark.hadoop.google.cloud.auth.service.account.enable=true /opt/spark-apps/spark_stream.py"
 
   grafana:
     image: grafana/grafana:10.0.0
