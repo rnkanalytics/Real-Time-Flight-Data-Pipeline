@@ -1,55 +1,17 @@
-services:
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
-  kafka:
-    image: confluentinc/cp-kafka:7.4.0
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-  producer:
+producer:
     build: ./producer
     container_name: producer
     depends_on:
       - kafka
     environment:
       KAFKA_BROKER: kafka:29092
+      OPENSKY_CLIENT_ID: rnkanalytics-api-client
+      OPENSKY_CLIENT_SECRET: your_new_secret_here
+```
 
-  spark:
-    image: apache/spark:3.5.0
-    container_name: spark
-    user: root
-    environment:
-      - SPARK_MODE=master
-      - GOOGLE_APPLICATION_CREDENTIALS=/opt/spark-apps/gcp-key.json
-    volumes:
-      - ./spark:/opt/spark-apps
-      - ~/.config/gcloud/application_default_credentials.json:/opt/spark-apps/gcp-key.json
-    command: bash -c "mkdir -p /root/.ivy2/cache && chmod -R 777 /root/.ivy2 && /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.34.0 /opt/spark-apps/spark_stream.py"
+Replace `your_new_secret_here` with your new regenerated secret — but **don't push this to GitHub**. Instead add `docker-compose.yml` to `.gitignore` and keep it local.
 
-  grafana:
-    image: grafana/grafana:10.0.0
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
-
-networks:
-  default:
-    name: flight-network
+Actually — better approach. Create a `.env` file in your project root:
+```
+OPENSKY_CLIENT_ID=rnkanalytics-api-client
+OPENSKY_CLIENT_SECRET=your_new_secret_here

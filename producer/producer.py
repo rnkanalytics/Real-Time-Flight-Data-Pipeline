@@ -7,8 +7,6 @@ import os
 import functools
 print = functools.partial(print, flush=True)
 
-# Retry connecting to Kafka up to 10 times with 5 second gaps
-# This handles the case where Kafka isn't ready yet when the producer starts
 def create_producer():
     for attempt in range(10):
         try:
@@ -28,7 +26,14 @@ def fetch_flights():
     """Call the OpenSky API and return raw flight states"""
     url = "https://opensky-network.org/api/states/all"
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(
+            url,
+            timeout=10,
+            auth=(
+                os.environ.get('OPENSKY_CLIENT_ID'),
+                os.environ.get('OPENSKY_CLIENT_SECRET')
+            )
+        )
         if response.status_code != 200:
             print(f"API returned status {response.status_code} — skipping this fetch")
             return []
@@ -41,28 +46,26 @@ def fetch_flights():
 def parse_flight(state):
     """Convert raw API array into a readable dictionary"""
     return {
-        "icao24":         state[0],   # Unique aircraft transponder ID
-        "callsign":       state[1],   # Flight number e.g. UAL123
-        "origin_country": state[2],   # Country of registration
-        "longitude":      state[5],   # Current longitude
-        "latitude":       state[6],   # Current latitude
-        "altitude":       state[7],   # Altitude in meters
-        "velocity":       state[9],   # Ground speed in m/s
-        "heading":        state[10],  # Direction in degrees
-        "on_ground":      state[8],   # True if aircraft is on the ground
-        "timestamp":      state[3],   # Unix timestamp of last position update
+        "icao24":         state[0],
+        "callsign":       state[1],
+        "origin_country": state[2],
+        "longitude":      state[5],
+        "latitude":       state[6],
+        "altitude":       state[7],
+        "velocity":       state[9],
+        "heading":        state[10],
+        "on_ground":      state[8],
+        "timestamp":      state[3],
         "category":       state[17] if len(state) > 17 else None,
     }
 
 print("Producer starting — fetching flights every 10 seconds...")
 
-# Main loop — runs forever until the container is stopped
 while True:
     flights = fetch_flights()
     print(f"Fetched {len(flights)} flights")
 
     for state in flights:
-        # Only send flights that have valid coordinates
         if state[5] and state[6]:
             flight = parse_flight(state)
             producer.send('flights-raw', flight)
