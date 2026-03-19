@@ -40,7 +40,6 @@ df = spark.readStream \
     .option("kafka.bootstrap.servers", "kafka:29092") \
     .option("subscribe", "flights-raw") \
     .option("startingOffsets", "latest") \
-    .option("kafka.group.id", "spark-flight-consumer") \
     .option("failOnDataLoss", "false") \
     .load()
 
