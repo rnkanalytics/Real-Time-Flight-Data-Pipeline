@@ -21,7 +21,7 @@ schema = StructType([
 ])
 
 # Create the Spark session
-# spark-bigquery-with-dependencies lets Spark write directly to BigQuery
+# Only two packages needed — kafka connector and bigquery connector
 spark = SparkSession.builder \
     .appName("FlightStream") \
     .config("spark.jars.packages",
@@ -31,9 +31,8 @@ spark = SparkSession.builder \
 
 spark.sparkContext.setLogLevel("WARN")
 
-# Set BigQuery project and dataset
+# Set BigQuery project
 spark.conf.set("parentProject", "flights-490708")
-spark.conf.set("temporaryGcsBucket", "flights-490708-temp")
 
 # Read from Kafka topic flights-raw
 df = spark.readStream \
@@ -62,13 +61,14 @@ cleaned = parsed \
     .withColumn("created_at",   current_timestamp())
 
 def write_to_bigquery(batch_df, batch_id):
-    """Write each cleaned micro batch to BigQuery"""
+    """Write each cleaned micro batch directly to BigQuery"""
     count = batch_df.count()
     print(f"Writing batch {batch_id} — {count} flights to BigQuery")
 
     batch_df.write \
         .format("bigquery") \
         .option("table", "flights-490708.flight_data.flights") \
+        .option("writeMethod", "direct") \
         .mode("append") \
         .save()
 
