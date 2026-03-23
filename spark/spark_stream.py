@@ -1,9 +1,9 @@
 import functools
 print = functools.partial(print, flush=True)
-
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col, trim, round as spark_round, current_timestamp
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+from google.cloud import bigquery
 
 schema = StructType([
     StructField("icao24",        StringType(), True),
@@ -20,6 +20,7 @@ schema = StructType([
 spark = SparkSession.builder \
     .appName("FlightStreamProcessor") \
     .getOrCreate()
+
 spark.sparkContext.setLogLevel("WARN")
 
 raw = spark.readStream \
@@ -50,6 +51,7 @@ def write_to_bigquery(batch_df, batch_id):
     if count == 0:
         return
 
+    # Write raw flights
     batch_df.write \
         .format("bigquery") \
         .option("table", "flights-490708.flight_data.flights") \
@@ -57,17 +59,25 @@ def write_to_bigquery(batch_df, batch_id):
         .mode("append") \
         .save()
 
-    from google.cloud import bigquery
     client = bigquery.Client(project="flights-490708")
-    cleanup_query = """
+
+    # Cleanup old flights keeping only latest batch
+    client.query("""
         DELETE FROM `flights-490708.flight_data.flights`
         WHERE created_at < (
             SELECT MAX(created_at)
             FROM `flights-490708.flight_data.flights`
         )
-    """
-    client.query(cleanup_query).result()
-    print(f"Batch {batch_id} written, previous batch purged")
+    """).result()
+
+    # Save risk snapshot from latest batch
+    client.query("""
+        INSERT INTO `flights-490708.flight_data.flight_risk_snapshot`
+        SELECT *, CURRENT_TIMESTAMP() as snapshot_time
+        FROM `flights-490708.flight_data.flight_risk_analytics`
+    """).result()
+
+    print(f"Batch {batch_id} written, previous batch purged, snapshot saved")
 
 cleaned.writeStream \
     .foreachBatch(write_to_bigquery) \
