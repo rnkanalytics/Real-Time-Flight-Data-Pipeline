@@ -1,14 +1,12 @@
 # ✈️ Real-Time Global Flight Risk Monitor
 
-> Real-time airspace threat intelligence — tracking 6,700+ flights worldwide against active conflict zones, providing instant visibility into safety compliance and rerouting requirements.
+> Real-time airspace threat intelligence — tracking 10,000+ flights worldwide against active conflict zones, providing instant visibility into safety compliance and rerouting requirements.
 
 🔴 [Live Dashboard](https://rnkanalytics.grafana.net/public-dashboards/d7b34806ee1f4c449e603dc80f691448) &nbsp;|&nbsp; 👤 [LinkedIn](https://www.linkedin.com/in/ramiz-khatib/) &nbsp;|&nbsp; 💻 [GitHub](https://github.com/rnkanalytics)
 
 ---
 
 ## 🌍 Project Overview
-
-MH17 was shot down over Ukraine in 2014 killing 298 people. This system flags at-risk flights within 30 seconds.
 
 This pipeline ingests live ADS-B flight data every 5 seconds, cross-references it against AI-powered conflict zone intelligence, scores each flight by risk level, and visualizes everything on a real-time Grafana dashboard.
 
@@ -18,7 +16,7 @@ This pipeline ingests live ADS-B flight data every 5 seconds, cross-references i
 ```
 airplanes.live API (Live ADS-B)
          ↓
-    producer.py          ← Fetches 6,700+ live flights worldwide
+    producer.py          ← Fetches 10,000+ live flights worldwide
          ↓
       Kafka              ← Message queue (topic: flights-raw)
          ↓
@@ -175,18 +173,6 @@ docker-compose up -d --build
 5. Add GitHub secrets for automated airspace updates
 - ANTHROPIC_API_KEY
 - GCP_KEY
-
----
-
-## 💰 Estimated Monthly Costs
-
-| Service | Cost |
-|---|---|
-| GCP VM (e2-medium) | $24.00 |
-| BigQuery storage | $2.74 |
-| Network egress | $1.00 |
-| Anthropic API | ~$0.60 |
-| **Total** | **~$28.34/month** |
 
 ---
 
