@@ -1,970 +1,1272 @@
 {
-  "annotations": {
-    "list": [
-      {
-        "builtIn": 1,
-        "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
-        },
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "editable": true,
-  "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
-  "id": 1,
-  "links": [],
-  "panels": [
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "gridPos": {
-        "h": 2,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "## ✈️ Global Flight Risk Monitor &nbsp;|&nbsp; Real-Time Airspace Threat Intelligence &nbsp;|&nbsp; Powered by Live ADS-B Data & AI &nbsp;|&nbsp; 🕐 ${__to:date:YYYY-MM-DD HH:mm} UTC",
-        "mode": "markdown"
-      },
-      "pluginVersion": "11.0.0",
-      "type": "text"
+  "apiVersion": "dashboard.grafana.app/v2beta1",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "bfgwt27ntshdsc",
+    "namespace": "stacks-1569237",
+    "uid": "59171733-bb82-401f-ad22-bd65bbc707f7",
+    "resourceVersion": "1774301687746287",
+    "generation": 5,
+    "creationTimestamp": "2026-03-23T21:15:12Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "1"
     },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
+    "annotations": {
+      "grafana.app/createdBy": "user:efgx1xhqz71tsf",
+      "grafana.app/folder": "",
+      "grafana.app/saved-from-ui": "Grafana Cloud (steady)",
+      "grafana.app/updatedBy": "user:efgx1xhqz71tsf",
+      "grafana.app/updatedTimestamp": "2026-03-23T21:34:47Z"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
           },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Live Flight Risk Map",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  callsign AS `Flight`,\n  restricted_zone AS `Restricted Zone`,\n  severity AS `Severity`,\n  risk_label AS `Risk Level`,\n  risk_score AS `Risk Score`,\n  zone_status AS `Zone Status`,\n  miles_from_zone AS `Miles From Zone`,\n  altitude AS `Altitude ft`,\n  heading AS `Heading`,\n  velocity AS `Speed Knots`,\n  flight_phase AS `Flight Phase`,\n  icao24 AS `ICAO24`,\n  latitude,\n  longitude\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)\nORDER BY risk_score DESC",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
             }
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              },
-              {
-                "color": "#00e676",
-                "value": 2
-              },
-              {
-                "color": "#ffd600",
-                "value": 5
-              },
-              {
-                "color": "#ff6d00",
-                "value": 7
-              },
-              {
-                "color": "#ff1744",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 12,
-        "x": 0,
-        "y": 2
-      },
-      "id": 1,
-      "options": {
-        "basemap": {
-          "config": {
-            "showLabels": true,
-            "theme": "dark"
-          },
-          "name": "Layer 0",
-          "opacity": 1,
-          "tooltip": true,
-          "type": "carto"
-        },
-        "controls": {
-          "mouseWheelZoom": true,
-          "showAttribution": true,
-          "showDebug": false,
-          "showMeasure": false,
-          "showScale": true,
-          "showZoom": true
-        },
-        "layers": [
-          {
-            "config": {
-              "showLegend": false,
-              "style": {
-                "color": {
-                  "field": "Risk Score",
-                  "fixed": "yellow"
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "geomap",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "basemap": {
+                  "config": {
+                    "showLabels": true,
+                    "theme": "dark"
+                  },
+                  "name": "Layer 0",
+                  "opacity": 1,
+                  "tooltip": true,
+                  "type": "carto"
                 },
-                "opacity": 1,
-                "rotation": {
-                  "field": "Heading",
-                  "fixed": 0,
-                  "max": 360,
-                  "min": -360,
-                  "mode": "mod"
+                "controls": {
+                  "mouseWheelZoom": true,
+                  "showAttribution": true,
+                  "showDebug": false,
+                  "showMeasure": false,
+                  "showScale": true,
+                  "showZoom": true
                 },
-                "size": {
-                  "fixed": 8,
-                  "max": 15,
-                  "min": 2
+                "layers": [
+                  {
+                    "config": {
+                      "showLegend": false,
+                      "style": {
+                        "color": {
+                          "field": "Risk Score",
+                          "fixed": "yellow"
+                        },
+                        "opacity": 1,
+                        "rotation": {
+                          "field": "Heading",
+                          "fixed": 0,
+                          "max": 360,
+                          "min": -360,
+                          "mode": "mod"
+                        },
+                        "size": {
+                          "fixed": 8,
+                          "max": 15,
+                          "min": 2
+                        },
+                        "symbol": {
+                          "fixed": "img/icons/marker/plane.svg",
+                          "mode": "fixed"
+                        },
+                        "symbolAlign": {
+                          "horizontal": "center",
+                          "vertical": "center"
+                        },
+                        "text": {
+                          "fixed": "",
+                          "mode": "fixed"
+                        },
+                        "textConfig": {
+                          "fontSize": 10,
+                          "offsetX": 0,
+                          "offsetY": 0,
+                          "textAlign": "left",
+                          "textBaseline": "bottom"
+                        }
+                      }
+                    },
+                    "location": {
+                      "mode": "auto"
+                    },
+                    "name": "Flight Details",
+                    "tooltip": true,
+                    "type": "markers"
+                  }
+                ],
+                "tooltip": {
+                  "mode": "none"
                 },
-                "symbol": {
-                  "fixed": "img/icons/marker/plane.svg",
-                  "mode": "fixed"
-                },
-                "symbolAlign": {
-                  "horizontal": "center",
-                  "vertical": "center"
-                },
-                "text": {
-                  "fixed": "",
-                  "mode": "fixed"
-                },
-                "textConfig": {
-                  "fontSize": 10,
-                  "offsetX": 0,
-                  "offsetY": 0,
-                  "textAlign": "left",
-                  "textBaseline": "bottom"
-                }
-              }
-            },
-            "location": {
-              "mode": "auto"
-            },
-            "name": "Flight Details",
-            "tooltip": true,
-            "type": "markers"
-          }
-        ],
-        "tooltip": {
-          "mode": "none"
-        },
-        "view": {
-          "allLayers": true,
-          "id": "coords",
-          "lat": 35,
-          "lon": 30,
-          "zoom": 4
-        }
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  callsign AS `Flight`,\n  restricted_zone AS `Restricted Zone`,\n  severity AS `Severity`,\n  risk_label AS `Risk Level`,\n  risk_score AS `Risk Score`,\n  zone_status AS `Zone Status`,\n  miles_from_zone AS `Miles From Zone`,\n  altitude AS `Altitude ft`,\n  heading AS `Heading`,\n  velocity AS `Speed Knots`,\n  flight_phase AS `Flight Phase`,\n  icao24 AS `ICAO24`,\n  latitude,\n  longitude\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)\nORDER BY risk_score DESC",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Live Flight Risk Map",
-      "type": "geomap"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 12,
-        "y": 2
-      },
-      "id": 3,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Total Flights Monitored",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 16,
-        "y": 2
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT country) as value\nFROM `flights-490708.flight_data.restricted_airspace`",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Restricted Zones Active",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 20,
-        "y": 2
-      },
-      "id": 7,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT restricted_zone) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE zone_status = 'INSIDE'\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Active Conflict Zones",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 12,
-        "y": 7
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 10\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Inside Closed Airspace",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 16,
-        "y": 7
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 7\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Near Closed or Inside High Risk",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 20,
-        "y": 7
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 5\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Near High Risk or Inside Restr.",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-bigquery-datasource",
-        "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Severity"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "applyToRow": false,
-                  "mode": "gradient",
-                  "type": "color-background"
+                "view": {
+                  "allLayers": true,
+                  "dashboardVariable": false,
+                  "id": "coords",
+                  "lat": 35,
+                  "lon": 30,
+                  "noRepeat": false,
+                  "zoom": 4
                 }
               },
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "CLOSED": {
-                        "color": "#ff1744",
-                        "index": 0
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
                       },
-                      "HIGH RISK": {
-                        "color": "#ff6d00",
-                        "index": 1
+                      {
+                        "value": 2,
+                        "color": "#00e676"
                       },
-                      "RESTRICTED": {
-                        "color": "#ffd600",
-                        "index": 2
+                      {
+                        "value": 5,
+                        "color": "#ffd600"
+                      },
+                      {
+                        "value": 7,
+                        "color": "#ff6d00"
+                      },
+                      {
+                        "value": 10,
+                        "color": "#ff1744"
                       }
-                    },
-                    "type": "value"
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    }
                   }
-                ]
+                },
+                "overrides": []
               }
-            ]
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
           },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Flight Phase"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 103
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "text",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                },
+                "content": "### ✈️ Global Flight Risk Monitor &nbsp;|&nbsp; Real-Time Airspace Threat Intelligence &nbsp;|&nbsp; Powered by Live ADS-B Data & AI &nbsp;|&nbsp; 🕐 ${__to:date:YYYY-MM-DD HH:mm} UTC &nbsp;|&nbsp; [GitHub](https://github.com/rnkanalytics) &nbsp;|&nbsp; [LinkedIn](https://www.linkedin.com/in/ramiz-khatib/)",
+                "mode": "markdown"
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
               }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Speed Knots"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 118
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Miles From Zone"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 148
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Zone Status"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 148
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Altitude ft"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 137
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Miles From Zone"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "index": 0,
-                        "text": "N/A"
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Total Flights Monitored",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
                       }
                     },
-                    "type": "value"
+                    "refId": "A",
+                    "hidden": false
                   }
-                ]
-              }
-            ]
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
           },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Flight"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      " ": {
-                        "index": 1,
-                        "text": "Flight # N/A"
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Inside Closed Airspace",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 10\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
                       }
                     },
-                    "type": "value"
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Live Alert Feed",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\n  callsign AS `Flight`,\n  restricted_zone AS `Restricted Zone`,\n  severity AS `Severity`,\n  risk_label AS `Risk Level`,\n  zone_status AS `Zone Status`,\n  CAST(miles_from_zone AS INT64) AS `Miles From Zone`,\n  CAST(altitude AS INT64) AS `Altitude ft`,\n  CAST(velocity AS INT64) AS `Speed Knots`,\n  flight_phase AS `Flight Phase`,\n  snapshot_time AS `Last Seen`\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)\nORDER BY risk_score DESC, miles_from_zone ASC",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true,
+                "sortBy": []
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "auto",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": [
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Severity"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.cellOptions",
+                        "value": {
+                          "applyToRow": false,
+                          "mode": "gradient",
+                          "type": "color-background"
+                        }
+                      },
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "options": {
+                              "CLOSED": {
+                                "color": "#ff1744",
+                                "index": 0
+                              },
+                              "HIGH RISK": {
+                                "color": "#ff6d00",
+                                "index": 1
+                              },
+                              "RESTRICTED": {
+                                "color": "#ffd600",
+                                "index": 2
+                              }
+                            },
+                            "type": "value"
+                          }
+                        ]
+                      }
+                    ]
                   },
                   {
-                    "options": {
-                      "match": "null",
-                      "result": {
-                        "index": 0,
-                        "text": "Flight # N/A"
-                      }
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Flight Phase"
                     },
-                    "type": "special"
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 103
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Speed Knots"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 118
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Miles From Zone"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 148
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Zone Status"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 148
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Altitude ft"
+                    },
+                    "properties": [
+                      {
+                        "id": "custom.width",
+                        "value": 137
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Miles From Zone"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "options": {
+                              "0": {
+                                "index": 0,
+                                "text": "N/A"
+                              }
+                            },
+                            "type": "value"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "options": "Flight"
+                    },
+                    "properties": [
+                      {
+                        "id": "mappings",
+                        "value": [
+                          {
+                            "options": {
+                              " ": {
+                                "index": 1,
+                                "text": "Flight # N/A"
+                              }
+                            },
+                            "type": "value"
+                          },
+                          {
+                            "options": {
+                              "match": "null",
+                              "result": {
+                                "index": 0,
+                                "text": "Flight # N/A"
+                              }
+                            },
+                            "type": "special"
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 12
-      },
-      "id": 5,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "11.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-bigquery-datasource",
-            "uid": "efcc2d25-a61a-4f74-80f0-ef4013c2cb33"
-          },
-          "editorMode": "code",
-          "format": 1,
-          "location": "",
-          "project": "flights-490708",
-          "rawQuery": true,
-          "rawSql": "SELECT\n  callsign AS `Flight`,\n  restricted_zone AS `Restricted Zone`,\n  severity AS `Severity`,\n  risk_label AS `Risk Level`,\n  zone_status AS `Zone Status`,\n  CAST(miles_from_zone AS INT64) AS `Miles From Zone`,\n  CAST(altitude AS INT64) AS `Altitude ft`,\n  CAST(velocity AS INT64) AS `Speed Knots`,\n  flight_phase AS `Flight Phase`,\n  snapshot_time AS `Last Seen`\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)\nORDER BY risk_score DESC, miles_from_zone ASC",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
+            }
           }
         }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Restricted Zones Active",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT country) as value\nFROM `flights-490708.flight_data.restricted_airspace`",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Active Conflict Zones",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT restricted_zone) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE zone_status = 'INSIDE'\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Near Closed or Inside High Risk",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 7\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Near High Risk or Inside Restr.",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-bigquery-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "dfgx2ci6p0s8we"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "format": 1,
+                        "location": "",
+                        "project": "flights-490708",
+                        "rawQuery": true,
+                        "rawSql": "SELECT COUNT(DISTINCT icao24) as value\nFROM `flights-490708.flight_data.flight_risk_snapshot`\nWHERE risk_score = 5\nAND snapshot_time = (\n  SELECT MAX(snapshot_time)\n  FROM `flights-490708.flight_data.flight_risk_snapshot`\n)",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.0-23069273608.patch3",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "text"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 2,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 2,
+              "width": 12,
+              "height": 10,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 2,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 16,
+              "y": 2,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-6"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 20,
+              "y": 2,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-7"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 7,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-4"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 16,
+              "y": 7,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-8"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 20,
+              "y": 7,
+              "width": 4,
+              "height": 5,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-9"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 12,
+              "width": 24,
+              "height": 10,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-5"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
       ],
-      "title": "Live Alert Feed",
-      "type": "table"
-    }
-  ],
-  "schemaVersion": 39,
-  "tags": [],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
-  "timeRangeUpdatedDuringEditOrView": false,
-  "timepicker": {},
-  "timezone": "browser",
-  "title": "Flight Tracker",
-  "uid": "bfgwt27ntshdsc",
-  "version": 1,
-  "weekStart": ""
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "Flight Tracker",
+    "variables": []
+  }
 }
