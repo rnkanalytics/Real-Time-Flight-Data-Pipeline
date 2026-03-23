@@ -1,0 +1,31 @@
+name: Update Restricted Airspace
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic google-cloud-bigquery
+
+      - name: Create GCP credentials file
+        run: echo '${{ secrets.GCP_KEY }}' > /tmp/gcp-key.json
+
+      - name: Run airspace updater
+        run: python update_airspace.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key.json
