@@ -21,11 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install anthropic google-cloud-bigquery
 
-      - name: Create GCP credentials file
-        run: echo '${{ secrets.GCP_KEY }}' > /tmp/gcp-key.json
-
       - name: Run airspace updater
         run: python update_airspace.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-key.json
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GCP_KEY }}
