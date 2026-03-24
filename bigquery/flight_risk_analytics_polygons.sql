@@ -1,8 +1,7 @@
--- flight_risk_analytics_polygons.sql
---
--- Run this in BigQuery AFTER load_country_polygons.py has completed.
--- Uses real country border polygons from Natural Earth for accurate
--- ST_CONTAINS checks instead of bounding boxes.
+-- flight_risk_analytics.sql
+-- This is the live view in BigQuery: flights-490708.flight_data.flight_risk_analytics
+-- Uses real country border polygons (ST_CONTAINS) to eliminate bounding box false positives
+-- Last updated: 2026-03-24
 
 CREATE OR REPLACE VIEW `flights-490708.flight_data.flight_risk_analytics` AS
 
@@ -109,30 +108,19 @@ FROM (
       r.reason,
       (r.max_lat - r.min_lat) * (r.max_lon - r.min_lon) AS zone_area,
 
-      -- KEY FIX: use real country border polygon for inside check.
-      -- ST_CONTAINS against actual borders means Romania will correctly
-      -- return false for Ukraine's polygon even though Romania sits
-      -- inside Ukraine's bounding box.
       CASE
+        -- Real polygon exists AND flight is inside it → truly inside
         WHEN cb.border IS NOT NULL
           AND ST_CONTAINS(cb.border, ST_GEOGPOINT(fl.longitude, fl.latitude))
         THEN 0.0
 
-        -- Fallback: if no polygon found, use bounding box ST_CONTAINS
-        WHEN cb.border IS NULL
-          AND ST_CONTAINS(
-            ST_MAKEPOLYGON(ST_MAKELINE([
-              ST_GEOGPOINT(r.min_lon, r.min_lat),
-              ST_GEOGPOINT(r.max_lon, r.min_lat),
-              ST_GEOGPOINT(r.max_lon, r.max_lat),
-              ST_GEOGPOINT(r.min_lon, r.max_lat),
-              ST_GEOGPOINT(r.min_lon, r.min_lat)
-            ])),
-            ST_GEOGPOINT(fl.longitude, fl.latitude)
-          )
-        THEN 0.0
+        -- Real polygon exists BUT flight is outside it → not inside this zone
+        -- Set to 999 so it is excluded by the WHERE clause below
+        WHEN cb.border IS NOT NULL
+          AND NOT ST_CONTAINS(cb.border, ST_GEOGPOINT(fl.longitude, fl.latitude))
+        THEN 999.0
 
-        -- Otherwise compute distance to bounding box edge
+        -- No polygon available → fall back to bounding box distance
         ELSE ROUND(
           ST_DISTANCE(
             ST_GEOGPOINT(fl.longitude, fl.latitude),
@@ -152,9 +140,6 @@ FROM (
 
     FROM `flights-490708.flight_data.flights` fl
     CROSS JOIN `flights-490708.flight_data.restricted_airspace` r
-
-    -- Join real border polygon for this restricted country (LEFT so we keep
-    -- zones that might not have a polygon match yet)
     LEFT JOIN `flights-490708.flight_data.country_borders` cb
       ON LOWER(cb.country_name) = LOWER(r.country)
 
@@ -167,14 +152,12 @@ FROM (
       AND fl.altitude    > 1000
       AND fl.velocity    > 50
       AND fl.created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 MINUTE)
-      -- Pre-filter to candidate zones only (2 degree buffer for NEAR/APPROACHING)
       AND fl.latitude  BETWEEN r.min_lat - 2 AND r.max_lat + 2
       AND fl.longitude BETWEEN r.min_lon - 2 AND r.max_lon + 2
   ) f
+  WHERE f.dist_miles < 999
 )
 
--- Keep only the highest risk zone per flight.
--- Tiebreak: smallest zone area wins (more specific country match)
 QUALIFY ROW_NUMBER() OVER (
   PARTITION BY icao24
   ORDER BY risk_score DESC, miles_from_zone ASC, zone_area ASC

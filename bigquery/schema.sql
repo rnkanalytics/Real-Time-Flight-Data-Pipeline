@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `flights-490708.flight_data.restricted_airspace` (
 -- --------------------------------------------
 -- TABLE 3: flight_risk_snapshot
 -- Persistent last known state for dashboard
+-- Recreated every Spark batch via CREATE OR REPLACE TABLE
 -- --------------------------------------------
 CREATE TABLE IF NOT EXISTS `flights-490708.flight_data.flight_risk_snapshot` (
   icao24            STRING,
@@ -73,14 +74,61 @@ PARTITION BY DATE(snapshot_time);
 
 
 -- --------------------------------------------
+-- TABLE 4: country_polygons
+-- Raw Natural Earth GeoJSON — source for country_borders
+-- Created by load_country_polygons.py (run once)
+-- --------------------------------------------
+CREATE TABLE IF NOT EXISTS `flights-490708.flight_data.country_polygons` (
+  country_name        STRING NOT NULL,
+  natural_earth_name  STRING,
+  iso_a3              STRING,
+  geometry_geojson    STRING NOT NULL
+);
+
+
+-- --------------------------------------------
+-- TABLE 5: country_borders
+-- Real country border polygons as GEOGRAPHY type
+-- Used by flight_risk_analytics view for accurate
+-- ST_CONTAINS checks instead of bounding boxes
+-- Created by load_country_polygons.py (run once)
+-- --------------------------------------------
+CREATE TABLE IF NOT EXISTS `flights-490708.flight_data.country_borders` (
+  country_name        STRING,
+  natural_earth_name  STRING,
+  iso_a3              STRING,
+  border              GEOGRAPHY
+);
+
+
+-- --------------------------------------------
 -- VIEW: flight_risk_analytics
--- JOIN flights + restricted_airspace
--- Risk scoring, distance calculation, enrichment
+-- JOIN flights + restricted_airspace + country_borders
+-- Uses real country polygons (ST_CONTAINS) to eliminate
+-- bounding box false positives (e.g. Romania inside Ukraine bbox)
 -- --------------------------------------------
 CREATE OR REPLACE VIEW `flights-490708.flight_data.flight_risk_analytics` AS
 
 SELECT
-  *,
+  icao24,
+  callsign,
+  latitude,
+  longitude,
+  altitude,
+  heading,
+  velocity,
+  vertical_rate,
+  created_at,
+  restricted_zone,
+  severity,
+  reason,
+  miles_from_zone,
+  zone_status,
+  flight_phase,
+  risk_score,
+  speed_category,
+  altitude_category,
+  heading_direction,
   CASE
     WHEN risk_score >= 8 THEN '🔴 CRITICAL'
     WHEN risk_score >= 5 THEN '🟠 HIGH'
@@ -99,125 +147,42 @@ FROM (
     f.velocity,
     f.vertical_rate,
     f.created_at,
-    r.country AS restricted_zone,
-    r.severity,
-    r.reason,
+    f.country        AS restricted_zone,
+    f.severity,
+    f.reason,
+    f.dist_miles     AS miles_from_zone,
+    f.zone_area,
 
-    -- Distance in miles from restricted zone boundary
-    ROUND(
-      ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(
-            ST_MAKELINE([
-              ST_GEOGPOINT(r.min_lon, r.min_lat),
-              ST_GEOGPOINT(r.max_lon, r.min_lat),
-              ST_GEOGPOINT(r.max_lon, r.max_lat),
-              ST_GEOGPOINT(r.min_lon, r.max_lat),
-              ST_GEOGPOINT(r.min_lon, r.min_lat)
-            ])
-          ),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371
-    , 1) AS miles_from_zone,
-
-    -- Zone status based on distance
     CASE
-      WHEN ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(ST_MAKELINE([
-            ST_GEOGPOINT(r.min_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.min_lat)
-          ])),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371 = 0    THEN 'INSIDE'
-      WHEN ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(ST_MAKELINE([
-            ST_GEOGPOINT(r.min_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.min_lat)
-          ])),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371 <= 69  THEN 'NEAR'
-      WHEN ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(ST_MAKELINE([
-            ST_GEOGPOINT(r.min_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.min_lat)
-          ])),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371 <= 138 THEN 'APPROACHING'
+      WHEN f.dist_miles = 0    THEN 'INSIDE'
+      WHEN f.dist_miles <= 69  THEN 'NEAR'
+      WHEN f.dist_miles <= 138 THEN 'APPROACHING'
     END AS zone_status,
 
-    -- Flight phase
     CASE
       WHEN f.vertical_rate > 500  THEN 'CLIMBING'
       WHEN f.vertical_rate < -500 THEN 'DESCENDING'
       ELSE 'CRUISING'
     END AS flight_phase,
 
-    -- Risk score
     CASE
-      WHEN ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(ST_MAKELINE([
-            ST_GEOGPOINT(r.min_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.min_lat)
-          ])),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371 = 0
-      THEN
-        CASE r.severity
-          WHEN 'CLOSED'     THEN 10
-          WHEN 'HIGH RISK'  THEN 7
-          WHEN 'RESTRICTED' THEN 5
-          ELSE 3
-        END
-      WHEN ST_DISTANCE(
-        ST_GEOGPOINT(f.longitude, f.latitude),
-        ST_CLOSESTPOINT(
-          ST_MAKEPOLYGON(ST_MAKELINE([
-            ST_GEOGPOINT(r.min_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.min_lat),
-            ST_GEOGPOINT(r.max_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.max_lat),
-            ST_GEOGPOINT(r.min_lon, r.min_lat)
-          ])),
-          ST_GEOGPOINT(f.longitude, f.latitude)
-        )
-      ) * 0.000621371 <= 69
-      THEN
-        CASE r.severity
-          WHEN 'CLOSED'     THEN 7
-          WHEN 'HIGH RISK'  THEN 5
-          WHEN 'RESTRICTED' THEN 3
-          ELSE 2
-        END
+      WHEN f.dist_miles = 0
+      THEN CASE f.severity
+        WHEN 'CLOSED'     THEN 10
+        WHEN 'HIGH RISK'  THEN 7
+        WHEN 'RESTRICTED' THEN 5
+        ELSE 3
+      END
+      WHEN f.dist_miles <= 69
+      THEN CASE f.severity
+        WHEN 'CLOSED'     THEN 7
+        WHEN 'HIGH RISK'  THEN 5
+        WHEN 'RESTRICTED' THEN 3
+        ELSE 2
+      END
       ELSE 2
     END AS risk_score,
 
-    -- Speed category
     CASE
       WHEN f.velocity > 500 THEN 'HIGH SPEED'
       WHEN f.velocity > 300 THEN 'CRUISE SPEED'
@@ -225,7 +190,6 @@ FROM (
       ELSE 'SLOW'
     END AS speed_category,
 
-    -- Altitude category
     CASE
       WHEN f.altitude > 35000 THEN 'HIGH ALTITUDE'
       WHEN f.altitude > 20000 THEN 'MID ALTITUDE'
@@ -233,7 +197,6 @@ FROM (
       ELSE 'VERY LOW'
     END AS altitude_category,
 
-    -- Heading direction
     CASE
       WHEN f.heading BETWEEN 315 AND 360 OR f.heading BETWEEN 0 AND 45 THEN 'NORTH'
       WHEN f.heading BETWEEN 45  AND 135 THEN 'EAST'
@@ -241,28 +204,64 @@ FROM (
       WHEN f.heading BETWEEN 225 AND 315 THEN 'WEST'
     END AS heading_direction
 
-  FROM `flights-490708.flight_data.flights` f
-  CROSS JOIN `flights-490708.flight_data.restricted_airspace` r
+  FROM (
+    SELECT
+      fl.*,
+      r.country,
+      r.severity,
+      r.reason,
+      (r.max_lat - r.min_lat) * (r.max_lon - r.min_lon) AS zone_area,
 
-  WHERE
-    f.latitude    IS NOT NULL
-    AND f.longitude   IS NOT NULL
-    AND f.altitude    IS NOT NULL
-    AND f.velocity    IS NOT NULL
-    AND f.heading     IS NOT NULL
-    AND f.altitude    > 1000
-    AND f.velocity    > 50
-    AND f.created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 MINUTE)
-    AND (
-      f.latitude  BETWEEN r.min_lat - 2 AND r.max_lat + 2
-      AND f.longitude BETWEEN r.min_lon - 2 AND r.max_lon + 2
-    )
-    AND NOT (
-      r.country = 'Ukraine'
-      AND f.latitude < 45.5
-    )
+      CASE
+        -- Real polygon exists AND flight is inside it → truly inside
+        WHEN cb.border IS NOT NULL
+          AND ST_CONTAINS(cb.border, ST_GEOGPOINT(fl.longitude, fl.latitude))
+        THEN 0.0
+
+        -- Real polygon exists BUT flight is outside it → exclude
+        WHEN cb.border IS NOT NULL
+          AND NOT ST_CONTAINS(cb.border, ST_GEOGPOINT(fl.longitude, fl.latitude))
+        THEN 999.0
+
+        -- No polygon available → fall back to bounding box distance
+        ELSE ROUND(
+          ST_DISTANCE(
+            ST_GEOGPOINT(fl.longitude, fl.latitude),
+            ST_CLOSESTPOINT(
+              ST_MAKEPOLYGON(ST_MAKELINE([
+                ST_GEOGPOINT(r.min_lon, r.min_lat),
+                ST_GEOGPOINT(r.max_lon, r.min_lat),
+                ST_GEOGPOINT(r.max_lon, r.max_lat),
+                ST_GEOGPOINT(r.min_lon, r.max_lat),
+                ST_GEOGPOINT(r.min_lon, r.min_lat)
+              ])),
+              ST_GEOGPOINT(fl.longitude, fl.latitude)
+            )
+          ) * 0.000621371
+        , 1)
+      END AS dist_miles
+
+    FROM `flights-490708.flight_data.flights` fl
+    CROSS JOIN `flights-490708.flight_data.restricted_airspace` r
+    LEFT JOIN `flights-490708.flight_data.country_borders` cb
+      ON LOWER(cb.country_name) = LOWER(r.country)
+
+    WHERE
+      fl.latitude    IS NOT NULL
+      AND fl.longitude   IS NOT NULL
+      AND fl.altitude    IS NOT NULL
+      AND fl.velocity    IS NOT NULL
+      AND fl.heading     IS NOT NULL
+      AND fl.altitude    > 1000
+      AND fl.velocity    > 50
+      AND fl.created_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 MINUTE)
+      AND fl.latitude  BETWEEN r.min_lat - 2 AND r.max_lat + 2
+      AND fl.longitude BETWEEN r.min_lon - 2 AND r.max_lon + 2
+  ) f
+  WHERE f.dist_miles < 999
 )
+
 QUALIFY ROW_NUMBER() OVER (
   PARTITION BY icao24
-  ORDER BY risk_score DESC, miles_from_zone ASC
+  ORDER BY risk_score DESC, miles_from_zone ASC, zone_area ASC
 ) = 1;
