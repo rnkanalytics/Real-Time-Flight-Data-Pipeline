@@ -70,9 +70,10 @@ def write_to_bigquery(batch_df, batch_id):
         )
     """).result()
 
-    # Save risk snapshot from latest batch
+    # Save risk snapshot — CREATE OR REPLACE so table is always recreated
+    # with the correct schema from the view, even if the view changes
     client.query("""
-        INSERT INTO `flights-490708.flight_data.flight_risk_snapshot`
+        CREATE OR REPLACE TABLE `flights-490708.flight_data.flight_risk_snapshot` AS
         SELECT *, CURRENT_TIMESTAMP() as snapshot_time
         FROM `flights-490708.flight_data.flight_risk_analytics`
     """).result()
