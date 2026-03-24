@@ -1,23 +1,21 @@
+cd /Users/ramizkhatib/Desktop/flight-pipeline
+cat > update_airspace.py << 'ENDOFFILE'
 import anthropic
 from google.cloud import bigquery
 from datetime import datetime
 import json
 import os
 
-# Handle GCP credentials from GitHub Actions secret
 gcp_key = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if gcp_key:
     with open("/tmp/gcp-key.json", "w") as f:
         f.write(gcp_key.strip())
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/tmp/gcp-key.json"
 
-# --- CLIENTS ---
 claude = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 bq = bigquery.Client(project="flights-490708")
 TABLE = "flights-490708.flight_data.restricted_airspace"
 
-# Exact sovereign border bounding boxes for every country
-# Source: Natural Earth Data (public domain)
 KNOWN_BOUNDS = {
     "Afghanistan":                {"min_lat": 29.318572, "max_lat": 38.486281, "min_lon": 60.528429, "max_lon": 75.158027},
     "Albania":                    {"min_lat": 39.624997, "max_lat": 42.688238, "min_lon": 19.304486, "max_lon": 21.020040},
@@ -73,6 +71,7 @@ KNOWN_BOUNDS = {
     "France":                     {"min_lat": 41.263218, "max_lat": 51.268318, "min_lon": -5.453428, "max_lon": 9.867834},
     "Gabon":                      {"min_lat": -4.101226, "max_lat": 2.318217, "min_lon": 8.500224, "max_lon": 14.539444},
     "Gambia":                     {"min_lat": 13.061000, "max_lat": 13.825313, "min_lon": -17.028825, "max_lon": -13.797778},
+    "Gaza":                       {"min_lat": 31.216357, "max_lat": 31.596459, "min_lon": 34.208743, "max_lon": 34.488107},
     "Georgia":                    {"min_lat": 41.055292, "max_lat": 43.586429, "min_lon": 39.884480, "max_lon": 46.736537},
     "Germany":                    {"min_lat": 47.270111, "max_lat": 55.099161, "min_lon": 5.866315, "max_lon": 15.041931},
     "Ghana":                      {"min_lat": 4.539252, "max_lat": 11.174856, "min_lon": -3.260786, "max_lon": 1.273294},
@@ -136,8 +135,6 @@ KNOWN_BOUNDS = {
     "Pakistan (Northwest/Baluchistan)": {"min_lat": 23.691965, "max_lat": 37.133030, "min_lon": 60.874248, "max_lon": 77.837450},
     "Palestine":                  {"min_lat": 31.220128, "max_lat": 32.552147, "min_lon": 34.068973, "max_lon": 35.573923},
     "Palestinian Territory":      {"min_lat": 31.220128, "max_lat": 32.552147, "min_lon": 34.068973, "max_lon": 35.573923},
-    "Gaza":                       {"min_lat": 31.216357, "max_lat": 31.596459, "min_lon": 34.208743, "max_lon": 34.488107},
-    "West Bank":                  {"min_lat": 31.334600, "max_lat": 32.552147, "min_lon": 34.887700, "max_lon": 35.573923},
     "Panama":                     {"min_lat": 7.220541, "max_lat": 9.611610, "min_lon": -82.965783, "max_lon": -77.242566},
     "Papua New Guinea":           {"min_lat": -10.652476, "max_lat": -2.500002, "min_lon": 141.000210, "max_lon": 156.019965},
     "Paraguay":                   {"min_lat": -27.548499, "max_lat": -19.342746, "min_lon": -62.685057, "max_lon": -54.292959},
@@ -186,11 +183,11 @@ KNOWN_BOUNDS = {
     "Uzbekistan":                 {"min_lat": 37.182116, "max_lat": 45.590118, "min_lon": 55.997786, "max_lon": 73.139736},
     "Venezuela":                  {"min_lat": 0.647529,  "max_lat": 15.915843, "min_lon": -73.352963, "max_lon": -59.542707},
     "Vietnam":                    {"min_lat": 8.179066, "max_lat": 23.393395, "min_lon": 102.144410, "max_lon": 114.333759},
+    "West Bank":                  {"min_lat": 31.334600, "max_lat": 32.552147, "min_lon": 34.887700, "max_lon": 35.573923},
     "Yemen":                      {"min_lat": 12.585950, "max_lat": 19.000003, "min_lon": 42.604872, "max_lon": 53.108572},
     "Zambia":                     {"min_lat": -17.961228, "max_lat": -8.271282, "min_lon": 21.999350, "max_lon": 33.701111},
     "Zimbabwe":                   {"min_lat": -22.424109, "max_lat": -15.609703, "min_lon": 25.237300, "max_lon": 33.068341},
 }
-
 
 def ask_claude_for_restrictions():
     response = claude.messages.create(
@@ -208,12 +205,11 @@ def ask_claude_for_restrictions():
             - Use the actual sovereign border coordinates of the country ONLY
             - Do NOT expand the bounding box to cover surrounding conflict regions
             - Do NOT include neighboring countries in the bounding box
-            - Bounding boxes must be tight to the country's actual borders, not the broader affected region
+            - Bounding boxes must be tight to the country's actual borders
 
-            EXAMPLES OF CORRECT vs INCORRECT:
+            EXAMPLES:
             - Iran: correct is (~29.0 to 39.8 lat, 44.0 to 63.3 lon), NOT 25.0 lat which bleeds into Saudi Arabia
             - Ukraine: correct is (~44.4 to 52.4 lat, 22.1 to 40.2 lon), NOT broader bounds that bleed into Poland or Romania
-            - Apply this same precision to every country in the list
 
             Each object must have exactly these fields:
             {
@@ -270,12 +266,7 @@ def refresh_bigquery(zones):
         autodetect=True,
     )
 
-    load_job = bq.load_table_from_json(
-        zones,
-        TABLE,
-        job_config=job_config,
-    )
-
+    load_job = bq.load_table_from_json(zones, TABLE, job_config=job_config)
     load_job.result()
 
     if load_job.errors:
@@ -294,3 +285,8 @@ if __name__ == "__main__":
     print(f"Validated bounding boxes")
     refresh_bigquery(zones)
     print(f"--- Done {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')} ---")
+ENDOFFILE
+
+git add update_airspace.py
+git commit -m "fix: WRITE_TRUNCATE with all country bounds"
+git push origin main
