@@ -228,12 +228,21 @@ def ask_claude_for_restrictions():
         if hasattr(block, "text"):
             text += block.text
 
+    print(f"Raw Claude response: {text[:500]}")
+
     text = text.strip()
+    if not text:
+        raise ValueError("Claude returned empty response")
+
     if text.startswith("```"):
         text = text.split("```")[1]
     if text.startswith("json"):
         text = text[4:]
     text = text.strip()
+
+    if not text:
+        raise ValueError("Claude returned empty JSON after stripping markdown")
+
     return json.loads(text)
 
 
