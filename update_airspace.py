@@ -262,16 +262,29 @@ def refresh_bigquery(zones):
     for zone in zones:
         zone["updated_at"] = now
 
-    bq.query(f"DELETE FROM `{TABLE}` WHERE TRUE").result()
-    print(f"Cleared existing data")
+    # Use WRITE_TRUNCATE instead of DELETE + insert_rows_json
+    job_config = bigquery.LoadJobConfig(
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+        source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+        autodetect=True,
+    )
 
-    errors = bq.insert_rows_json(TABLE, zones)
-    if not errors:
+    json_data = "\n".join([json.dumps(zone) for zone in zones])
+
+    load_job = bq.load_table_from_json(
+        [json.loads(row) for row in json_data.split("\n")],
+        TABLE,
+        job_config=job_config,
+    )
+
+    load_job.result()  # Wait for job to complete
+
+    if load_job.errors:
+        print(f"BigQuery errors: {load_job.errors}")
+    else:
         print(f"Inserted {len(zones)} restricted zones into BigQuery")
         for z in zones:
             print(f"  {z['severity']:12} | {z['country']:20} | {z['reason'][:60]}")
-    else:
-        print(f"BigQuery errors: {errors}")
 
 
 if __name__ == "__main__":
